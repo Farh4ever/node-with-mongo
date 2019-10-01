@@ -1,5 +1,5 @@
 const express = require('express')
-const userRouter = require('./router/user')
+const userRouter = require('./router/userRoutes')
 require('dotenv').config();
 var device = require('express-device');
 const port = process.env.PORT

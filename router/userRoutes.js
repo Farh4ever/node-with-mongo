@@ -1,5 +1,5 @@
 const express = require('express')
-const User = require('../models/Users')
+const User = require('../models/UsersModel')
 var device = require('express-device');
 const router = express.Router()
 const auth = require('../middleware/auth')
@@ -8,11 +8,12 @@ d.use(device.capture())
 router.post('/users', async (req, res) => {
     // Create a new user
     try {
-        const user = new User(req.body)
-        await user.save()
         const device_type = req.device.type.toUpperCase()
+        const user = new User(req.body)
+        console.log(req.body)
+        await user.save()
         console.log(device_type)
-        const token = await user.generateAuthToken()
+        const token = await user.generateAuthToken(device_type)
         res.status(201).send({ user, device_type, token })
     } catch (error) {
         res.status(400).send(error)
@@ -38,6 +39,13 @@ router.post('/users/login', async(req, res) => {
 router.get('/users/me', auth, async(req, res) => {
     // View logged in user profile
     res.status(200).send(req.user)
+})
+
+router.post('/users/me/update', auth, async(req, res) => {
+    // Update logged in user profile
+        const user = new User()
+        const update = await user.updateUser(req.user._id,req.body)
+        res.status(200).send(update)
 })
 
 router.post('/users/me/logout', auth, async (req, res) => {

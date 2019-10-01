@@ -31,7 +31,7 @@ const userSchema = mongoose.Schema({
         },
         token: {
             type: String,
-            required: true
+            required: true,
         }
     }]
 })
@@ -45,13 +45,14 @@ userSchema.pre('save', async function (next) {
     next()
 })
 
-userSchema.methods.generateAuthToken = async function() {
+userSchema.methods.generateAuthToken = async function(device_type) {
     // Generate an auth token for the user
     const user = this
+    console.log("inside genauth")
     const token = jwt.sign({_id: user._id}, process.env.JWT_KEY)
-    user.tokens = user.tokens.concat({token})
+    user.tokens = user.tokens.concat({device_type,token})
     await user.save()
-    return token
+    return device_type,token
 }
 
 userSchema.statics.findByCredentials = async (email, password) => {
@@ -64,6 +65,29 @@ userSchema.statics.findByCredentials = async (email, password) => {
     if (!isPasswordMatch) {
         throw new Error({ error: 'Invalid login credentials' })
     }
+    return user
+}
+
+
+
+userSchema.methods.updateUser = async function(id,body) {
+    // Update user profile
+    mongoose.set('useFindAndModify', false);
+    const user = await User.findByIdAndUpdate(id,body,function(err,res){
+        if(err) 
+        throw new Error(err)
+        else
+        return res
+    })
+    return user
+}
+userSchema.statics.updateById= async function(id) {
+    const user= await User.findByIdAndUpdate(id,req.body, function(err,res){
+        if(!err) 
+        res.status(200).send("profile updated successfully")
+        else
+        res.statics(500).send("failde to update record")
+    })
     return user
 }
 
